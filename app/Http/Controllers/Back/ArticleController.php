@@ -15,39 +15,39 @@ use App\Http\Requests\UpdateArticleRequest;
 class ArticleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the my resource. 
      */
     public function index()
     {
-        if(request()->ajax()){
+        if (request()->ajax()) {
             $article = Article::with('Category')->latest()->get();
 
             return DataTables::of($article)
                 //custom kolom
                 ->addIndexColumn()  //untuk id
-                ->addColumn('category_id', function($article){
+                ->addColumn('category_id', function ($article) {
                     return $article->Category->name;
                 })
-                
-                ->addColumn('status', function($article){
-                    if($article->status == 0){
+
+                ->addColumn('status', function ($article) {
+                    if ($article->status == 0) {
                         return '<span class="badge bg-danger">Private</span>';
-                    }else{
+                    } else {
                         return '<span class="badge bg-success">Published</span>';
                     }
                 })
-                ->addColumn('button', function($article){
+                ->addColumn('button', function ($article) {
                     return '
                             <div class="text-center">
-                                <a href="articles/'.$article->id.'" class="btn btn-secondary" >Detail</a>
-                                <a href="articles/'.$article->id.'/edit" class="btn btn-primary" >Edit</a>
-                                <a href="#" onclick="deleteArticle(this)" data-id="'.$article->id.'"  class="btn btn-danger" >Delete</a>
+                                <a href="articles/' . $article->id . '" class="btn btn-secondary" >Detail</a>
+                                <a href="articles/' . $article->id . '/edit" class="btn btn-primary" >Edit</a>
+                                <a href="#" onclick="deleteArticle(this)" data-id="' . $article->id . '"  class="btn btn-danger" >Delete</a>
                             </div>
                         ';
                 })
 
                 //Panggil custom kolom
-                ->rawColumns(['category_id','status','button'])                
+                ->rawColumns(['category_id', 'status', 'button'])
                 ->make();
         }
         return view('back.article.index');
@@ -58,13 +58,13 @@ class ArticleController extends Controller
         // ]);
     }
 
-   
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        return view('back.article.create',[
+        return view('back.article.create', [
             'categories' => Category::get()
         ]);
     }
@@ -77,7 +77,7 @@ class ArticleController extends Controller
         $data = $request->validated();
 
         $file = $request->file('img');      //img adala nama form
-        $fileName = uniqid().'.'.$file->getClientOriginalExtension();     //jpg,jpeg
+        $fileName = uniqid() . '.' . $file->getClientOriginalExtension();     //jpg,jpeg
         $file->storeAs('public/back/', $fileName);  // public/back/12377hy.jpg
 
         $data['user_id'] = auth()->user()->id;
@@ -94,14 +94,14 @@ class ArticleController extends Controller
      */
     public function show(string $id)
     {
-       return view('back.article.show',[
-            'article' => Article::with(['User','Category'])->find($id)
-       ]);
+        return view('back.article.show', [
+            'article' => Article::with(['User', 'Category'])->find($id)
+        ]);
 
-       /*
-            ket :
-                with(['User','Category']) : eager loading /optimasi eloquent
-       */
+        /*
+             ket :
+                 with(['User','Category']) : eager loading /optimasi eloquent
+        */
     }
 
     /**
@@ -109,8 +109,8 @@ class ArticleController extends Controller
      */
     public function edit(string $id)
     {
-        return view('back.article.update',[
-            'article'    => Article::find($id),
+        return view('back.article.update', [
+            'article' => Article::find($id),
             'categories' => Category::get()
         ]);
     }
@@ -124,17 +124,17 @@ class ArticleController extends Controller
 
         if ($request->hasFile('img')) {
             $file = $request->file('img');      //img adala nama form
-            $fileName = uniqid().'.'.$file->getClientOriginalExtension();     //jpg,jpeg
+            $fileName = uniqid() . '.' . $file->getClientOriginalExtension();     //jpg,jpeg
             $file->storeAs('public/back/', $fileName);  // public/back/12377hy.jpg
-    
+
             // Unlink img/delete old image
-            Storage::delete('public/back/'.$request->oldImg);
+            Storage::delete('public/back/' . $request->oldImg);
 
             $data['img'] = $fileName;
         } else {
             $data['img'] = $request->oldImg;
-        }      
-       
+        }
+
         $data['user_id'] = auth()->user()->id;
         $data['slug'] = Str::slug($data['title']);
 
@@ -149,7 +149,7 @@ class ArticleController extends Controller
     public function destroy(string $id)
     {
         $data = Article::find($id);
-        Storage::delete('public/back/'.$data->img);
+        Storage::delete('public/back/' . $data->img);
         $data->delete();
 
         return response()->json([
